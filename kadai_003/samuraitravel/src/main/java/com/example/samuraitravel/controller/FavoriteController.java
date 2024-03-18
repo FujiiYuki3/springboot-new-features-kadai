@@ -10,9 +10,11 @@ import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import com.example.samuraitravel.entity.Favorite;
+import com.example.samuraitravel.entity.House;
 import com.example.samuraitravel.entity.User;
 import com.example.samuraitravel.form.FavoriteRegisterForm;
 import com.example.samuraitravel.repository.FavoriteRepository;
@@ -66,11 +68,11 @@ public class FavoriteController {
 	}*/
 	
 	@PostMapping("/houses/{id}/create")
-	public String create(/*@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, @PathVariable(name = "id") Integer id, */@ModelAttribute @Validated FavoriteRegisterForm favoriteRegisterForm) {
-		//Integer houseId = houseRepository.getHouseId(id);
-		//Integer userId = userRepository.getUserId();
+	public String create(@ModelAttribute @Validated FavoriteRegisterForm favoriteRegisterForm, @PathVariable(name = "id") Integer id, @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+		House house = houseRepository.getReferenceById(id);
+		User user = userDetailsImpl.getUser();
 		
-		favoriteService.create(favoriteRegisterForm);
+		favoriteService.create(favoriteRegisterForm, house, user);
 		
 		return "redirect:/houses/{id}";
 	}
