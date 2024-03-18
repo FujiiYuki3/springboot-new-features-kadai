@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.samuraitravel.entity.Favorite;
+import com.example.samuraitravel.entity.House;
+import com.example.samuraitravel.entity.User;
 import com.example.samuraitravel.form.FavoriteRegisterForm;
 import com.example.samuraitravel.repository.FavoriteRepository;
 import com.example.samuraitravel.repository.HouseRepository;
@@ -22,13 +24,11 @@ public class FavoriteService {
 	}
 	
 	@Transactional
-	public void create(FavoriteRegisterForm favoriteRegisterForm) {
+	public void create(FavoriteRegisterForm favoriteRegisterForm, House house, User user) {
 		Favorite favorite = new Favorite();
-		/*House house = houseRepository.getReferenceById(favoriteRegisterForm.getHouseId());
-		User user = userRepository.getReferenceById(favoriteRegisterForm.getUserId());
 		
-		favoriteRegisterForm.setHouseId(house);
-		favoriteRegisterForm.setUserId(user);*/
+		favoriteRegisterForm.setHouseId(house.getId());
+		favoriteRegisterForm.setUserId(user.getId());
 		
 		favoriteRepository.save(favorite);
 	}
