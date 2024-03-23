@@ -43,7 +43,5 @@ public class Favorite {
 	public void setHouse(House house) {
 		this.house = house;
 	}
-	
-	private String Error;
 
 }

@@ -7,17 +7,20 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.samuraitravel.entity.Favorite;
+import com.example.samuraitravel.entity.House;
 import com.example.samuraitravel.entity.User;
 import com.example.samuraitravel.form.FavoriteRegisterForm;
 import com.example.samuraitravel.repository.FavoriteRepository;
 import com.example.samuraitravel.repository.HouseRepository;
-import com.example.samuraitravel.repository.UserRepository;
 import com.example.samuraitravel.security.UserDetailsImpl;
 import com.example.samuraitravel.service.FavoriteService;
 
@@ -26,14 +29,12 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class FavoriteController {
 	private final FavoriteRepository favoriteRepository;
-	private final UserRepository userRepository;
 	private final HouseRepository houseRepository;
 	private final FavoriteService favoriteService;
 	//private final Favorite favorite;
 	
-	public FavoriteController(FavoriteRepository favoriteRepository, UserRepository userRepository, HouseRepository houseRepository, FavoriteService favoriteService/*, Favorite favorite*/) {
+	public FavoriteController(FavoriteRepository favoriteRepository, HouseRepository houseRepository, FavoriteService favoriteService/*, Favorite favorite*/) {
 		this.favoriteRepository = favoriteRepository;
-		this.userRepository = userRepository;
 		this.houseRepository = houseRepository;
 		this.favoriteService = favoriteService;
 		//this.favorite = favorite;
@@ -51,85 +52,36 @@ public class FavoriteController {
 		return "favorites/index";
 	}
 	
-	/*@GetMapping("houses/{id}")
-	public String input(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, @PathVariable(name = "id") Integer id, @ModelAttribute FavoriteInputForm favoriteInputForm, Model model) {
-		//House house = houseRepository.getReferenceById(id);
-		//User user = userDetailsImpl.getUser();
-		
-		FavoriteRegisterForm favoriteRegisterForm = new FavoriteRegisterForm();
-		
-		//model.addAttribute("house", house);
-		//model.addAttribute("user", user);
-		model.addAttribute("favoriteRegisterForm", favoriteRegisterForm);
-		
-		return "/houses/{id}/create";
-	}*/
-	
 	@PostMapping("/houses/{id}/create")
-	public String create(/*@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, @PathVariable(name = "id") Integer id, */@ModelAttribute @Validated FavoriteRegisterForm favoriteRegisterForm) {
-		//Integer houseId = houseRepository.getHouseId(id);
-		//Integer userId = userRepository.getUserId();
+	public String create(@ModelAttribute FavoriteRegisterForm favoriteRegisterForm, @PathVariable(name = "id") Integer id, @AuthenticationPrincipal UserDetailsImpl userDetailsImpl, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+		House house = houseRepository.getReferenceById(id);
+		User user = userDetailsImpl.getUser();
 		
-		favoriteService.create(favoriteRegisterForm);
+		if(favoriteService.isFavoritedHouseAndFavoritedUser(house, user)) {
+			FieldError fieldError = new FieldError(bindingResult.getObjectName(), "houseId", null);
+			bindingResult.addError(fieldError);
+		}
+		if(bindingResult.hasErrors()) {
+			return "redirect:/houses/{id}";
+		}
+		
+		favoriteService.create(favoriteRegisterForm, house, user);
+		
+		model.addAttribute("favoriteRegisterForm", favoriteRegisterForm);
+		redirectAttributes.addAttribute("success", redirectAttributes);
 		
 		return "redirect:/houses/{id}";
 	}
 	
-	/*@PostMapping("houses/{id}/favorite")
-	public String create(@PathVariable(name = "id") Integer id, @ModelAttribute @Validated FavoriteInputForm favoriteForm, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
-		Favorite favorite = new Favorite();
-		favorite.setUserId(favoriteForm.getUserId());
-		favorite.setHouseId(favoriteForm.getHouseId());
-		favoriteRepository.insertFavorite(favorite);
+	@PostMapping("houses/{id}/delete")
+	public String delete(@PathVariable(name = "id") Integer id, @AuthenticationPrincipal UserDetailsImpl userDetailsImpl, FavoriteRegisterForm favoriteRegisterForm, Model model) {
+		Integer userId = userDetailsImpl.getUser().getId();
+		favoriteRepository.deleteByHouseIdAndUserId(id, userId);
+		favoriteRegisterForm.deleteByHouseIdAndUserId(id, userId);
 		
-		model.addAttribute("userId", user);
-		model.addAttribute("houseId", house);
+		model.addAttribute("favoriteRegisterForm", favoriteRegisterForm);
 		
-		redirectAttributes.addFlashAttribute("favoriteForm", favoriteForm);
-		
-		return "redirect:/houses/show";
-	}*/
-	
-	/*@PostMapping("/create")
-	public ResponseEntity<Favorite> create(@RequestBody Favorite favorite, Principal principal){
-		Favorite favorite = new Favorite();
-		String currentUserId = principal.getName();
-		
-		return "redirect:/houses/show";
-	}*/
-	
-	/*@GetMapping("/houses/show")
-	public String show(@PathVariable(name = "id") Integer id, @ModelAttribute @Validated FavoriteInputForm favoriteInputForm, Model model) {
-		House house = houseRepository.getReferenceById(id);
-		
-		model.addAttribute("house", house);
-		model.addAttribute("favoriteInputForm", favoriteInputForm);
-		
-		return "houses/show";
-	}*/
-	
-	/*@PostMapping("/houses/show")
-	public String Favorite(@PathVariable("houseId") int houseId, @ModelAttribute("favorite") FavoriteRepository favoriteRepository, Authentication loginUser, Model model) {
-		if(favoriteRepository.existsByUserIdAndHouseId(loginUser.getId(), houseId) == true) {
-			favoriteRepository.deleteByUserNameAndHouseId(loginUser.getName(), houseId);
-		}else {
-			favoriteRepository.setHouseId(houseId);
-			favoriteRepository.setUserName(loginUser.getName());
-			favoriteRepository.save(favoriteRepository);
-		}
-		
-		return "redirect:/houses/show";
-	}*/
-	
-	/*@GetMapping
-	public String show(@ModelAttribute("houses") House house, Authentication loginUser, Model model) {
-		//Map<Integer, BigInteger> favoriteCount = favoriteRepository.findFavoriteCount();
-		//model.addAttribute("userName", favoriteRepository.findByUserName(loginUser.getName()));
-		//model.addAttribute("houses", favoriteRepository.findAllHouses());
-		//model.addAttribute("favoriteCount", favoriteCount);
-		//model.addAttribute("myFavorites", favoriteRepository.findMyFavorites(loginUser.getName()));
-		
-		return "redirect:/favorites/list";
-	}*/
+		return "redirect:/houses/{id}";
+	}
 
 }

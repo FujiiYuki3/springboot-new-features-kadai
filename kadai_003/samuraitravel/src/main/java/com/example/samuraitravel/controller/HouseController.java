@@ -16,18 +16,24 @@ import com.example.samuraitravel.entity.House;
 import com.example.samuraitravel.entity.User;
 import com.example.samuraitravel.form.FavoriteRegisterForm;
 import com.example.samuraitravel.form.ReservationInputForm;
+import com.example.samuraitravel.repository.FavoriteRepository;
 import com.example.samuraitravel.repository.HouseRepository;
 import com.example.samuraitravel.security.UserDetailsImpl;
+import com.example.samuraitravel.service.FavoriteService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 @RequestMapping("/houses")
 public class HouseController {
 	private final HouseRepository houseRepository;
+	private final FavoriteService favoriteService;
 	//private final UserRepository userRepository;
 	//private final ReviewRepository reviewRepository;
 	
-	public HouseController(HouseRepository houseRepository/*, UserRepository userRepository, ReviewRepository reviewRepository*/) {
+	public HouseController(HouseRepository houseRepository, FavoriteService favoriteService/*, UserRepository userRepository, ReviewRepository reviewRepository*/) {
 		this.houseRepository = houseRepository;
+		this.favoriteService = favoriteService;
 		//this.userRepository = userRepository;
 		//this.reviewRepository = reviewRepository;
 	}
@@ -78,16 +84,25 @@ public class HouseController {
 	}
 	
 	@GetMapping("/{id}")
-	public String show(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, @PathVariable(name = "id") Integer id, Model model) {
+	public String show(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, @PathVariable(name = "id") Integer id,FavoriteRegisterForm favoriteRegisterForm, FavoriteRepository favoriteRepository, HttpServletRequest httpServletRequest, Model model) {
 		House house = houseRepository.getReferenceById(id);
 		User user = userDetailsImpl.getUser();
 		//List<Review> newReviews = reviewRepository.findAll();
-		FavoriteRegisterForm favoriteRegisterForm = new FavoriteRegisterForm();
+		
+		favoriteRegisterForm.setHouseId(house.getId());
+		favoriteRegisterForm.setUserId(user.getId());
+		
+		/*if(favoriteRepository.getReferenceById(id) != null) {
+			model.addAttribute("ableDelete",true);
+		}else {
+			model.addAttribute("ableCreate",false);
+		}*/
 		
 		model.addAttribute("house", house);
 		model.addAttribute("user", user);
 		model.addAttribute("reservationInputForm", new ReservationInputForm());
 		model.addAttribute("favoriteRegisterForm", favoriteRegisterForm);
+		//model.addAttribute("favoriteRepository", favoriteRepository);
 		
 		return "houses/show";
 	}

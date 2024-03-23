@@ -1,9 +1,14 @@
 package com.example.samuraitravel.service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.samuraitravel.entity.Favorite;
+import com.example.samuraitravel.entity.House;
+import com.example.samuraitravel.entity.User;
 import com.example.samuraitravel.form.FavoriteRegisterForm;
 import com.example.samuraitravel.repository.FavoriteRepository;
 import com.example.samuraitravel.repository.HouseRepository;
@@ -22,16 +27,33 @@ public class FavoriteService {
 	}
 	
 	@Transactional
-	public void create(FavoriteRegisterForm favoriteRegisterForm) {
+	public void create(FavoriteRegisterForm favoriteRegisterForm, House house, User user) {
 		Favorite favorite = new Favorite();
-		/*House house = houseRepository.getReferenceById(favoriteRegisterForm.getHouseId());
-		User user = userRepository.getReferenceById(favoriteRegisterForm.getUserId());
 		
-		favoriteRegisterForm.setHouseId(house);
-		favoriteRegisterForm.setUserId(user);*/
+		favoriteRegisterForm.setHouseId(house.getId());
+		favoriteRegisterForm.setUserId(user.getId());
+		
+		favorite.setHouse(houseRepository.getReferenceById(favoriteRegisterForm.getHouseId()));
+		favorite.setUser(userRepository.getReferenceById(favoriteRegisterForm.getUserId()));
 		
 		favoriteRepository.save(favorite);
 	}
+	
+	@Transactional
+	public boolean isFavoritedHouseAndFavoritedUser(House house, User user) {
+		Favorite favoriteHouse = favoriteRepository.getByHouse(house);
+		Favorite favoriteUser = favoriteRepository.getByUser(user);
+		
+		Map<Favorite, Favorite> map = new HashMap<>();
+		map.put(favoriteHouse, favoriteUser);
+		
+		return map != null;
+	}
+	
+	/*public boolean isFavoritedUser(Integer userId) {
+		User user = favoriteRepository.getUserId(userId);
+		return user != null;
+	}*/
 	
 	/*@Transactional
 	public boolean cancelFavorite(FavoriteForm favoriteForm) {

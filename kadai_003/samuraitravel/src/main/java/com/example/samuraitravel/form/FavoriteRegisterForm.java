@@ -1,7 +1,6 @@
 package com.example.samuraitravel.form;
 
-import com.example.samuraitravel.entity.House;
-import com.example.samuraitravel.entity.User;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -14,20 +13,18 @@ public class FavoriteRegisterForm {
 	@NotNull
 	private Integer userId;
 	
-	public House getHouse(House house) {
-		return house;
+	public void setHouseId(Integer houseId) {
+		this.houseId = houseId;
 	}
 	
-	public void setHouseId(House house) {
-		this.houseId = house.getId();
+	public void setUserId(Integer userId) {
+		this.userId = userId;
 	}
 	
-	public User getUser(User user) {
-		return user;
-	}
-	
-	public void setUserId(User user) {
-		this.userId = user.getId();
+	@Transactional
+	public void deleteByHouseIdAndUserId(Integer houseId, Integer userId) {
+		this.houseId = houseId;
+		this.userId = userId;
 	}
 
 }

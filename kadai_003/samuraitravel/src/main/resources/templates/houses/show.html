@@ -33,12 +33,18 @@
 									<input type="text" name="userId" th:value="${user.getId}">
 									<button type="submit">&#9825　お気に入り追加</button>
 								</form>-->
-								<form method="post" th:action="@{/houses/__${house.getId()}__/create}" th:object="${favoriteRegisterForm}">
-									<input type="text" name="houseId" th:value="${house.getId()}">
-									<input type="text" name="userId" th:value="${user.getId()}">
-									<button type="submit">&#9825　お気に入り追加</button>
-								</form>
-								<button>&#9829　お気に入り解除</button>
+								<div th:unless="${success}">
+									<form method="post" th:action="@{/houses/__${house.getId()}__/create}" th:object="${favoriteRegisterForm}">
+										<input type="hidden" name="houseId" th:field="*{houseId}">
+										<input type="hidden" name="userId" th:field="*{userId}">
+										<button type="submit">&#9825　お気に入り追加</button>
+									</form>
+								</div>
+								<div th:if="${success}">
+									<form method="post" th:action="@{/houses/__${house.getId()}__/delete}">
+										<button type="submit">&#9829　お気に入り解除</button>
+									</form>
+								</div>
 							</div>
 							
 							<h1 class="mb-4 text-center" th:text="${house.getName()}"></h1>
