@@ -82,18 +82,23 @@ public class HouseController {
 	@GetMapping("/{id}")
 	public String show(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, @PathVariable(name = "id") Integer id,FavoriteRegisterForm favoriteRegisterForm, FavoriteRepository favoriteRepository, HttpServletRequest httpServletRequest, Model model) {
 		House house = houseRepository.getReferenceById(id);
-		User user = userDetailsImpl.getUser();
 		
-		favoriteRegisterForm.setHouseId(house.getId());
-		favoriteRegisterForm.setUserId(user.getId());
-		
-		boolean isFavorited = favoriteService.isFavoritedHouseAndFavoritedUser(house, user);
 		
 		model.addAttribute("house", house);
-		model.addAttribute("user", user);
-		model.addAttribute("reservationInputForm", new ReservationInputForm());
-		model.addAttribute("favoriteRegisterForm", favoriteRegisterForm);
-		model.addAttribute("success", isFavorited);
+		
+		if(userDetailsImpl != null) {
+			User user = userDetailsImpl.getUser();
+			
+			favoriteRegisterForm.setHouseId(house.getId());
+			favoriteRegisterForm.setUserId(user.getId());
+			
+			boolean isFavorited = favoriteService.isFavoritedHouseAndFavoritedUser(house, user);
+			
+			model.addAttribute("user", user);
+			model.addAttribute("reservationInputForm", new ReservationInputForm());
+			model.addAttribute("favoriteRegisterForm", favoriteRegisterForm);
+			model.addAttribute("success", isFavorited);
+		}
 		
 		return "houses/show";
 	}
